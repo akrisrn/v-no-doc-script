@@ -1,0 +1,11 @@
+.item-home, .item-date, .item-creator, .item-commit, .item-raw, .item-ws-status, #backlinks, footer {
+  display: none !important;
+}
+
+main {
+  margin: 42px auto;
+
+  header {
+    margin-bottom: 56px;
+  }
+}

@@ -12,7 +12,11 @@ const context = path.join(__dirname, 'src');
 module.exports = {
   context,
   entry: {
-    'hello-world': './hello-world.ts',
+    common: './common.ts',
+    console: './console.ts',
+    provider: './provider.ts',
+    sandbox: './sandbox.ts',
+    'social-preview': './social-preview.ts',
   },
   plugins: [
     new CleanWebpackPlugin(),
