@@ -11,13 +11,15 @@ if (select) {
   topDiv.append(apiLink);
 }
 
-const consoleLink = document.createElement('a');
-consoleLink.href = `#/console.md`;
-topDiv.insertBefore(consoleLink, apiLink);
+const addToTop = (href: string) => {
+  const link = document.createElement('a');
+  link.href = href;
+  topDiv.insertBefore(link, apiLink);
+};
 
-const sandboxLink = document.createElement('a');
-sandboxLink.href = `#/sandbox.md`;
-topDiv.insertBefore(sandboxLink, apiLink);
+addToTop('#/console.md');
+addToTop('#/sandbox.md');
+addToTop(`#/${vno.selectConf}/releases/`);
 
 vno.updateDom().then();
 
