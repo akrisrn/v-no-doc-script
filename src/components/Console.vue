@@ -12,9 +12,7 @@
 </template>
 
 <script lang="ts">
-  @vno.VPD.Component({
-    el: '#console',
-  })
+  @vno.VPD.Component({ el: '#console' })
   export default class Console extends vno.Vue {
     evalStr = '';
     results: {
@@ -24,6 +22,7 @@
       value: string
     }[] = [];
 
+    // noinspection JSUnusedGlobalSymbols
     created() {
       this.reset();
     }

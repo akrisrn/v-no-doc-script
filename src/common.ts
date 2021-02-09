@@ -1,6 +1,7 @@
 import '@/styles/common.scss';
 
 const topDiv = document.querySelector('#top > div')!;
+
 const apiLink = document.createElement('a');
 apiLink.href = `#/${vno.selectConf}/api/`;
 const select = topDiv.querySelector('select');
@@ -9,12 +10,15 @@ if (select) {
 } else {
   topDiv.append(apiLink);
 }
+
 const consoleLink = document.createElement('a');
 consoleLink.href = `#/console.md`;
 topDiv.insertBefore(consoleLink, apiLink);
+
 const sandboxLink = document.createElement('a');
 sandboxLink.href = `#/sandbox.md`;
 topDiv.insertBefore(sandboxLink, apiLink);
+
 vno.updateDom().then();
 
 vno.callAndListen(() => {

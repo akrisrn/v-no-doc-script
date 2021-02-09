@@ -1,3 +1,3 @@
 import Provider from '@/components/Provider.vue';
 
-document.querySelector('main')!.parentElement!.append(new Provider().$el);
+document.querySelector('#app')!.append(new Provider().$el);

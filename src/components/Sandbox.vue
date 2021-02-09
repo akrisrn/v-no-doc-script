@@ -7,10 +7,9 @@
 </template>
 
 <script lang="ts">
-  @vno.VPD.Component({
-    el: '#sandbox',
-  })
+  @vno.VPD.Component({ el: '#sandbox' })
   export default class Sandbox extends vno.Vue {
+    // noinspection JSUnusedGlobalSymbols
     $refs!: {
       textarea: HTMLTextAreaElement
     };
@@ -18,15 +17,16 @@
     text = '';
     html = '';
     enableLS = true;
-    item = 'sandbox';
+    key = 'sandbox';
 
+    // noinspection JSUnusedGlobalSymbols
     created() {
       const data = document.querySelector('#sandbox')?.getAttribute('data');
       if (data) {
         this.enableLS = false;
         this.text = decodeURIComponent(data);
       } else {
-        this.text = localStorage.getItem(this.item) || '';
+        this.text = localStorage.getItem(this.key) || '';
       }
     }
 
@@ -37,12 +37,13 @@
         this.html = html;
         this.$nextTick(() => vno.updateDom());
       });
-      if (this.enableLS) {
-        if (this.text) {
-          localStorage.setItem(this.item, this.text);
-        } else {
-          localStorage.removeItem(this.item);
-        }
+      if (!this.enableLS) {
+        return;
+      }
+      if (this.text) {
+        localStorage.setItem(this.key, this.text);
+      } else {
+        localStorage.removeItem(this.key);
       }
     }
 
