@@ -54,35 +54,4 @@
   };
 </script>
 
-<style lang="scss" scoped>
-  #sandbox {
-    display: flex;
-    margin-bottom: 24px;
-
-    #preview, textarea {
-      width: 50%;
-    }
-
-    #preview {
-      > :first-child {
-        margin-top: 0;
-      }
-
-      > :last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    #separator {
-      margin: 0 16px;
-      border-left: 6px solid rgba(var(--info-color), 0.5);
-    }
-
-    textarea {
-      margin: 0;
-      padding: 0;
-      resize: none;
-      border-left: none;
-    }
-  }
-</style>
+<style lang="scss" scoped>@import "../styles/sandbox";</style>

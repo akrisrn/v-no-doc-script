@@ -53,20 +53,4 @@
   }
 </script>
 
-<style lang="scss" scoped>
-  #console, #console input {
-    font-family: var(--mono-font-family);
-  }
-
-  #console {
-    .result {
-      margin-top: 16px;
-    }
-
-    .value:before {
-      font-weight: bold;
-      margin-right: 8px;
-      content: ">";
-    }
-  }
-</style>
+<style lang="scss" scoped>@import "../styles/console";</style>

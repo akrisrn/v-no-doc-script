@@ -36,37 +36,4 @@
   }
 </script>
 
-<style lang="scss" scoped>
-  #provider {
-    font-size: var(--font-size-s);
-    margin: 40px 0;
-    transition: opacity 0.5s, margin 0.5s;
-    text-align: center;
-    opacity: 1;
-    color: var(--gray-font-color);
-
-    &.hidden {
-      visibility: hidden;
-      height: 0;
-      margin: 0;
-    }
-
-    > div {
-      > :first-child {
-        margin-top: 0;
-      }
-
-      > :last-child {
-        margin-bottom: 0;
-      }
-    }
-
-    @media screen and (max-width: 800px) {
-      margin: 24px 0;
-    }
-  }
-
-  body.zen #provider {
-    opacity: 0;
-  }
-</style>
+<style lang="scss" scoped>@import "../styles/provider";</style>
