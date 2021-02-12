@@ -33,7 +33,7 @@
     @vno.VPD.Watch('text')
     onTextChanged() {
       this.resize();
-      vno.renderMD(vno.filePath, this.text, vno.articleSelf.asyncResults).then(html => {
+      vno.renderMD(vno.filePath, vno.title, this.text, false, vno.articleSelf.asyncResults).then(html => {
         this.html = html;
         this.$nextTick(() => vno.updateDom());
       });
