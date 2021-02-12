@@ -22,6 +22,7 @@
 
     // noinspection JSUnusedGlobalSymbols
     mounted() {
+      document.querySelector('#app')!.append(this.$el);
       document.addEventListener(vno.EEvent.toggleZen, event => {
         if ((event as CustomEvent).detail === true) {
           setTimeout(() => {
