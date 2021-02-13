@@ -3,7 +3,7 @@ import '@/styles/common.scss';
 const topDiv = document.querySelector('#top > div')!;
 
 const apiLink = document.createElement('a');
-apiLink.href = `#/${vno.selectConf}/api/`;
+apiLink.href = `#${vno.getMessage('paths.api', [vno.selectConf])}`;
 const select = topDiv.querySelector('select');
 if (select) {
   topDiv.insertBefore(apiLink, select);
@@ -17,9 +17,9 @@ const addToTop = (href: string) => {
   topDiv.insertBefore(link, apiLink);
 };
 
-addToTop('#/console.md');
-addToTop('#/sandbox.md');
-addToTop(`#/${vno.selectConf}/releases/`);
+addToTop(`#${vno.getMessage('paths.console', [])}`);
+addToTop(`#${vno.getMessage('paths.sandbox', [])}`);
+addToTop(`#${vno.getMessage('paths.releases', [vno.selectConf])}`);
 
 vno.updateDom().then();
 
@@ -30,7 +30,7 @@ vno.callAndListen(() => {
   }
   const hash = itemCommit.innerText;
   const a = document.createElement('a');
-  a.href = `https://raw.githubusercontent.com/akrisrn/v-no-doc/${hash}${vno.filePath}`;
+  a.href = vno.getMessage('links.raw', [hash + vno.filePath]);
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
   a.text = hash;
