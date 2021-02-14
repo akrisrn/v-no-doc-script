@@ -19,6 +19,7 @@ const addToTop = (href: string) => {
 
 addToTop(`#${vno.getMessage('paths.console', [])}`);
 addToTop(`#${vno.getMessage('paths.sandbox', [])}`);
+addToTop(`#${vno.getMessage('paths.graph', [])}`);
 addToTop(`#${vno.getMessage('paths.releases', [vno.selectConf])}`);
 
 vno.updateDom().then();
