@@ -14,6 +14,7 @@ module.exports = {
   entry: {
     common: './common.ts',
     console: './console.ts',
+    graph: './graph.ts',
     provider: './provider.ts',
     sandbox: './sandbox.ts',
     'social-preview': './social-preview.ts',
