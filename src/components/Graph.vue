@@ -13,7 +13,6 @@
     Simulation,
     SimulationLinkDatum,
     SimulationNodeDatum,
-    ZoomBehavior,
     ZoomTransform,
   } from 'd3';
 
@@ -78,7 +77,6 @@
 
     canvasCtx!: CanvasRenderingContext2D;
     simulation!: Simulation<NodeDatum, LinkDatum>;
-    zoom!: ZoomBehavior<HTMLCanvasElement, unknown>;
     transform!: ZoomTransform;
 
     nodes: NodeDatum[] = [];
@@ -90,18 +88,11 @@
     draggedLinkSourceOffsetXY: [number, number] | null = null;
     draggedLinkTargetOffsetXY: [number, number] | null = null;
 
-    canvasNoTransXY = [0, 0];
-
     get style() {
       return {
         width: `${this.width}px`,
         height: `${this.height}px`,
       };
-    }
-
-    get canvasXY() {
-      const [x, y] = this.canvasNoTransXY;
-      return this.transformXY(x, y);
     }
 
     get selectedNode() {
@@ -139,56 +130,53 @@
     }
 
     // noinspection JSUnusedGlobalSymbols
-    mounted() {
+    async mounted() {
       const canvas = this.$refs.canvas;
       this.canvasCtx = canvas.getContext('2d')!;
       this.ticked();
 
-      vno.waitFor(() => {
+      if (!(await vno.waitFor(() => {
         // noinspection BadExpressionStatementJS
         d3;
-      }).then(success => {
-        if (!success) {
-          this.isError = true;
-          this.ticked();
-          return;
-        }
+      }))) {
+        this.isError = true;
+        this.ticked();
+        return;
+      }
 
-        this.transform = d3.zoomIdentity;
+      this.transform = d3.zoomIdentity;
 
-        this.$watch('width', () => {
-          const [x, y] = this.transformXY(this.width / 2, this.height / 2);
-          this.forceXY(x, y, true);
-          this.restartSimulationWithAlpha();
-        });
-        this.$watch('selectedNodeOrLink', () => {
-          this.interpolate = 0;
-          this.restartSimulationWithAlpha(false, 0.1);
-        });
-
-        this.simulation = d3.forceSimulation(this.nodes)
-            .force('charge', d3.forceManyBody<NodeDatum>().strength(node => {
-              return -Math.log2(this.nodeMaxRadius - node.radius + 2) * 100;
-            }))
-            .force('link', d3.forceLink<NodeDatum, LinkDatum>(this.links).id(node => node.id))
-            .on('tick', this.ticked);
-        this.forceXY(this.width / 2, this.height / 2);
-        this.forceCollide();
-
-        this.zoom = d3.zoom<HTMLCanvasElement, unknown>()
-            .scaleExtent([1 / 10, 10])
-            .on('zoom', this.zoomed);
-        d3.select(canvas)
-            .call(d3.drag<HTMLCanvasElement, unknown>()
-                .subject(this.dragSubject)
-                .on('start', this.dragStarted)
-                .on('drag', this.dragged)
-                .on('end', this.dragEnded))
-            .call(this.zoom)
-            .on('mousemove', this.mouseMoved);
-
-        this.initNodes();
+      this.$watch('width', () => {
+        const [x, y] = this.transformXY(this.width / 2, this.height / 2);
+        this.forceXY(x, y, true);
+        this.restartSimulationWithAlpha();
       });
+      this.$watch('selectedNodeOrLink', () => {
+        this.interpolate = 0;
+        this.restartSimulationWithAlpha(false, 0.1);
+      });
+
+      this.simulation = d3.forceSimulation(this.nodes)
+          .force('charge', d3.forceManyBody<NodeDatum>().strength(node => {
+            return -Math.log2(this.nodeMaxRadius - node.radius + 2) * 100;
+          }))
+          .force('link', d3.forceLink<NodeDatum, LinkDatum>(this.links).id(node => node.id))
+          .on('tick', this.ticked);
+      this.forceXY(this.width / 2, this.height / 2);
+      this.forceCollide();
+
+      d3.select(canvas)
+          .call(d3.drag<HTMLCanvasElement, unknown>()
+              .subject(this.dragSubject)
+              .on('start', this.dragStarted)
+              .on('drag', this.dragged)
+              .on('end', this.dragEnded))
+          .call(d3.zoom<HTMLCanvasElement, unknown>()
+              .scaleExtent([1 / 10, 10])
+              .on('zoom', this.zoomed))
+          .on('mousemove', this.mouseMoved);
+
+      this.initNodes();
     }
 
     initNodes() {
@@ -438,11 +426,11 @@
     }
 
     dragSubject() {
-      const node = this.findCurrentNode();
+      const node = this.findNode();
       if (node) {
         return node;
       }
-      const link = this.findCurrentLink();
+      const link = this.findLink();
       if (link) {
         return link;
       }
@@ -500,14 +488,12 @@
     }
 
     zoomed() {
-      this.canvasNoTransXY = this.getCanvasNoTransXY();
       this.transform = d3.event.transform;
       this.ticked();
     }
 
     mouseMoved() {
-      this.canvasNoTransXY = this.getCanvasNoTransXY();
-      const node = this.findCurrentNode();
+      const node = this.findNode();
       this.canvasCtx.canvas.title = node ? node.id : '';
     }
 
@@ -582,19 +568,16 @@
     }
 
     getCanvasXY() {
-      const [x, y] = this.getCanvasNoTransXY();
+      const [x, y] = d3.mouse(this.canvasCtx.canvas);
       return this.transformXY(x, y);
-    }
-
-    getCanvasNoTransXY() {
-      return d3.mouse(this.canvasCtx.canvas);
     }
 
     transformXY(x: number, y: number): [number, number] {
       return [this.transform.invertX(x), this.transform.invertY(y)];
     }
 
-    findNode(x: number, y: number) {
+    findNode() {
+      const [x, y] = this.getCanvasXY();
       for (let i = this.nodes.length - 1; i >= 0; --i) {
         const node = this.nodes[i];
         const dx = x - node.x!;
@@ -614,12 +597,8 @@
       return null;
     }
 
-    findCurrentNode() {
-      const [x, y] = this.canvasXY;
-      return this.findNode(x, y);
-    }
-
-    findLink(x: number, y: number) {
+    findLink() {
+      const [x, y] = this.getCanvasXY();
       for (let i = this.links.length - 1; i >= 0; --i) {
         const link = this.links[i];
         const [minX, maxX] = [link.source.x!, link.target.x!].sort((a, b) => a - b);
@@ -650,11 +629,6 @@
         }
       }
       return null;
-    }
-
-    findCurrentLink() {
-      const [x, y] = this.canvasXY;
-      return this.findLink(x, y);
     }
   }
 </script>
