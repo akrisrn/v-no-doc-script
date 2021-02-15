@@ -168,36 +168,38 @@
               .on('zoom', this.zoomed))
           .on('mousemove', this.mouseMoved);
 
-      this.initNodes();
+      this.initNodes().then();
     }
 
-    initNodes() {
-      vno.file.getFiles().then(({ files }) => {
-        this.isLoading = false;
-        const nodeDict: Dict<NodeDatum | undefined> = {};
-        Object.keys(files).forEach(path => {
-          if (nodeDict[path] === undefined) {
-            this.createNodeFromFile(path, files, nodeDict);
-          }
-        });
-      });
+    async initNodes() {
+      const { files } = await vno.file.getFiles();
+      const nodeDict: Dict<NodeDatum | undefined> = {};
+      for (const path of Object.keys(files)) {
+        if (nodeDict[path] === undefined) {
+          await this.createNodeFromFile(path, files, nodeDict);
+        }
+      }
+      this.isLoading = false;
     }
 
-    createNodeFromFile(path: string, files: Dict<IFile>, nodeDict: Dict<NodeDatum | undefined>) {
-      const file = files[path];
+    async createNodeFromFile(path: string, files: Dict<IFile | undefined>, nodeDict: Dict<NodeDatum | undefined>) {
+      let file = files[path];
+      if (file === undefined) {
+        file = await vno.file.getFile(path);
+      }
       const source = this.addNode(path, file.flags.title, file.flags.tags);
       nodeDict[path] = source;
-      Object.keys(file.links).forEach(targetPath => {
+      for (const targetPath of Object.keys(file.links)) {
         const link = file.links[targetPath];
         if (!link.isMarkdown) {
-          return;
+          continue;
         }
         let target = nodeDict[targetPath];
         if (target === undefined) {
-          target = this.createNodeFromFile(targetPath, files, nodeDict);
+          target = await this.createNodeFromFile(targetPath, files, nodeDict);
         }
         this.addLink(source, target);
-      });
+      }
       return source;
     }
 
