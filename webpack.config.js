@@ -24,6 +24,7 @@ module.exports = {
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
       filename: 'styles/[name].css',
+      chunkFilename: 'styles/[id].css',
     }),
   ],
   module: {
@@ -32,12 +33,13 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader',
       }, {
-        test: /\.ts$/,
+        test: /\.tsx?$/,
         use: [
           {
             loader: 'babel-loader',
             options: {
               presets: ['@babel/preset-env'],
+              plugins: ['@babel/plugin-transform-runtime'],
             },
           }, {
             loader: 'ts-loader',
@@ -46,18 +48,33 @@ module.exports = {
             },
           },
         ],
+        exclude: /node_modules/,
       }, {
-        test: /\.scss$/,
+        test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
           'sass-loader',
         ],
+      }, {
+        test: /\.sass$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              sassOptions: {
+                indentedSyntax: true,
+              },
+            },
+          },
+        ],
       },
     ],
   },
   resolve: {
-    extensions: ['.ts'],
+    extensions: ['.js', '.ts', '.tsx'],
     alias: {
       '@': context,
     },
