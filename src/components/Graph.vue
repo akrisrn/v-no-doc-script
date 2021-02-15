@@ -15,6 +15,7 @@
     SimulationNodeDatum,
     ZoomTransform,
   } from 'd3';
+  import { strToRGB } from '@/utils';
 
   interface NodeDatum extends SimulationNodeDatum {
     id: string;
@@ -29,15 +30,6 @@
     source: NodeDatum;
     target: NodeDatum;
     alpha?: number;
-  }
-
-  function strToRGB(str: string) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const hex = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-    return `#${'00000'.substring(0, 6 - hex.length)}${hex}`;
   }
 
   @vno.VPD.Component({ el: '#graph' })
