@@ -36,7 +36,9 @@
       const isAsync = evalStr.indexOf('await ') >= 0;
       const [value, isError] = vno.utils.evalFunction(evalStr, {
         path: vno.filePath,
+        title: vno.title,
         data: vno.mainSelf.fileData,
+        isSnippet: false,
       }, vno.articleSelf.asyncResults);
       this.results.unshift({
         code: vno.markdown.renderMD(`\`\`\`js\n${evalStr}\n\`\`\``, false),

@@ -51,7 +51,7 @@
       this.$refs.textarea.style.height = '';
       this.$refs.textarea.style.height = `${this.$refs.textarea.scrollHeight}px`;
     }
-  };
+  }
 </script>
 
 <style lang="scss" scoped>@import "../styles/sandbox";</style>
