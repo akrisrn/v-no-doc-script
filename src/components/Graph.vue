@@ -32,6 +32,14 @@
     alpha?: number;
   }
 
+  type TPoint = [number, number];
+
+  enum EColor {
+    white = '#ffffff',
+    red = '#ff3264',
+    gray = '#8d8d8d',
+  }
+
   @vno.VPD.Component({ el: '#graph' })
   export default class Graph extends vno.Vue {
     // noinspection JSUnusedGlobalSymbols
@@ -77,8 +85,8 @@
 
     selectedNodeOrLink: NodeDatum | LinkDatum | null = null;
 
-    draggedLinkSourceOffsetXY: [number, number] | null = null;
-    draggedLinkTargetOffsetXY: [number, number] | null = null;
+    draggedLinkSourceOffsetXY: TPoint | null = null;
+    draggedLinkTargetOffsetXY: TPoint | null = null;
 
     get style() {
       return {
@@ -111,11 +119,15 @@
       return this.linkCount[this.selectedNode.id];
     }
 
+    get centerXY(): TPoint {
+      return [this.width / 2, this.height / 2];
+    }
+
     // noinspection JSUnusedGlobalSymbols
     created() {
       const article = document.querySelector('article')!;
       const setWidth = () => {
-        this.width = article.clientWidth;
+        this.width = article.clientWidth - 16;
       };
       setWidth();
       window.onresize = setWidth;
@@ -139,7 +151,7 @@
       this.transform = d3.zoomIdentity;
 
       this.$watch('width', () => {
-        const [x, y] = this.transformXY(this.width / 2, this.height / 2);
+        const [x, y] = this.transformXY(...this.centerXY);
         this.forceXY(x, y, true);
         this.restartSimulationWithAlpha();
       });
@@ -154,7 +166,7 @@
           }))
           .force('link', d3.forceLink<NodeDatum, LinkDatum>(this.links).id(node => node.id))
           .on('tick', this.ticked);
-      this.forceXY(this.width / 2, this.height / 2);
+      this.forceXY(...this.centerXY);
       this.forceCollide();
 
       d3.select(canvas)
@@ -231,8 +243,10 @@
 
       if (this.isLoading) {
         this.canvasCtx.font = '80px sans-serif';
-        this.canvasCtx.fillStyle = this.isError ? '#ff0000' : '#424242';
-        this.canvasCtx.fillText(this.isError ? this.errorText : this.loadingText, this.width / 2, this.height / 2);
+        if (this.isError) {
+          this.canvasCtx.fillStyle = EColor.red;
+        }
+        this.canvasCtx.fillText(this.isError ? this.errorText : this.loadingText, ...this.centerXY);
       } else {
         this.canvasCtx.translate(this.transform.x, this.transform.y);
         this.canvasCtx.scale(this.transform.k, this.transform.k);
@@ -247,14 +261,21 @@
 
     drawLink(link: LinkDatum) {
       let isSelected = false;
+      const linkSource = link.source;
+      const linkTarget = link.target;
+      const linkSourceIndex = linkSource.index;
+      const linkTargetIndex = linkTarget.index;
       if (this.isSelectedLink) {
-        if (this.selectedLink.index === link.index) {
+        const selectSourceIndex = this.selectedLink.source.index;
+        const selectTargetIndex = this.selectedLink.target.index;
+        if (selectSourceIndex === linkSourceIndex && selectTargetIndex === linkTargetIndex ||
+            selectSourceIndex === linkTargetIndex && selectTargetIndex === linkSourceIndex) {
           isSelected = true;
         }
-      } else if (this.isSelectedNode && [link.source.index, link.target.index].includes(this.selectedNode.index)) {
+      } else if (this.isSelectedNode && [linkSourceIndex, linkTargetIndex].includes(this.selectedNode.index)) {
         isSelected = true;
       }
-      this.drawLinkFrom(link.source, link.target, isSelected, link);
+      this.drawLinkFrom(linkSource, linkTarget, isSelected, link);
     }
 
     drawLinkFrom(source: NodeDatum, target: NodeDatum, isSelected: boolean, link?: LinkDatum) {
@@ -278,7 +299,7 @@
         this.strokeWithColor(() => {
           this.canvasCtx.moveTo(offsetSourceX, offsetSourceY);
           this.canvasCtx.lineTo(offsetTargetX, offsetTargetY);
-        }, '#999999');
+        }, EColor.gray);
         this.drawLinkArrow(target, linkAngle, sinLinkAngle, cosLinkAngle);
       }, isSelected ? 1 : this.canvasAlpha, link);
     }
@@ -302,79 +323,73 @@
         this.canvasCtx.moveTo(offsetTargetX, offsetTargetY);
         this.canvasCtx.lineTo(offsetTargetX - offsetX1, offsetTargetY - offsetY1);
         this.canvasCtx.lineTo(offsetTargetX - offsetX2, offsetTargetY - offsetY2);
-      }, '#ff0000');
+      }, EColor.red);
     }
 
     drawNode(node: NodeDatum) {
+      const halfRadius = node.radius / 2 - 1;
+      let innerRadius = node.radius - 2;
+      if (node.innerRadius === undefined) {
+        node.innerRadius = innerRadius;
+      }
       let isTransparent = false;
-      let innerRadius = 0;
 
-      const isNearby = (isNearby: boolean) => {
-        if (isNearby) {
-          innerRadius = node.radius / 2;
-          return;
-        }
-        isTransparent = true;
-        innerRadius = node.radius - 2;
-      };
       if (this.isSelectedNode) {
-        if (node.index !== this.selectedNode.index) {
-          isNearby(this.selectedLinkCount.flat().includes(node.id));
+        if (node.index === this.selectedNode.index) {
+          innerRadius = 0;
+        } else if (this.selectedLinkCount.flat().includes(node.id)) {
+          innerRadius = halfRadius;
+        } else {
+          isTransparent = true;
         }
       } else if (this.isSelectedLink) {
-        isNearby(this.selectedLinkNodeIndices.includes(node.index));
+        if (this.selectedLinkNodeIndices.includes(node.index)) {
+          innerRadius = halfRadius;
+        } else {
+          isTransparent = true;
+        }
       }
 
-      if (!node.innerRadius) {
-        node.innerRadius = 0;
-      }
       if (node.innerRadius !== innerRadius) {
         innerRadius = d3.interpolate(node.innerRadius, innerRadius)(this.interpolate);
-        if (this.interpolate > 0) {
-          node.innerRadius = innerRadius;
-        }
+        node.innerRadius = innerRadius;
       }
 
-      if (node.radius > 0) {
-        const text = node.name;
-        const textX = node.x!;
-        const textY = node.y! + node.radius + 12;
-        if (text) {
-          this.drawWithAlpha(() => {
-            this.canvasCtx.strokeStyle = '#ffffff';
-            this.canvasCtx.strokeText(text, textX, textY);
-          }, 1);
-        }
-
+      const text = node.name;
+      const textX = node.x!;
+      const textY = node.y! + node.radius + 12;
+      if (text) {
         this.drawWithAlpha(() => {
-          const tagCount = node.tags.length;
-          const count = tagCount || 1;
-          const perAngle = this.PI_2 / count;
-          let startAngle = -perAngle;
-          let endAngle = 0;
-          for (let i = 0; i < count; i++) {
-            this.fillWithColor(() => {
-              this.canvasCtx.arc(node.x!, node.y!, node.radius, startAngle += perAngle, endAngle += perAngle);
-              if (count > 1) {
-                this.canvasCtx.lineTo(node.x!, node.y!);
-              }
-            }, strToRGB(tagCount > 0 ? node.tags[i] : 'Untagged'));
-          }
-
-          if (text) {
-            this.canvasCtx.fillStyle = '#424242';
-            this.canvasCtx.fillText(text, textX, textY);
-          }
-        }, isTransparent ? this.canvasAlpha : 1, node);
-      }
-
-      if (innerRadius > 0) {
-        this.drawWithAlpha(() => {
-          this.fillWithColor(() => {
-            this.canvasCtx.arc(node.x!, node.y!, innerRadius, 0, this.PI_2);
-          }, '#ffffff');
+          this.canvasCtx.strokeStyle = EColor.white;
+          this.canvasCtx.strokeText(text, textX, textY);
         }, 1);
       }
+
+      this.drawWithAlpha(() => {
+        const tagCount = node.tags.length;
+        const count = tagCount || 1;
+        const perAngle = this.PI_2 / count;
+        let startAngle = -perAngle;
+        let endAngle = 0;
+        for (let i = 0; i < count; i++) {
+          this.fillWithColor(() => {
+            this.canvasCtx.arc(node.x!, node.y!, node.radius, startAngle += perAngle, endAngle += perAngle);
+            if (count > 1) {
+              this.canvasCtx.lineTo(node.x!, node.y!);
+            }
+          }, strToRGB(tagCount > 0 ? node.tags[i] : 'Untagged'));
+        }
+
+        if (text) {
+          this.canvasCtx.fillText(text, textX, textY);
+        }
+      }, isTransparent ? this.canvasAlpha : 1, node);
+
+      this.drawWithAlpha(() => {
+        this.fillWithColor(() => {
+          this.canvasCtx.arc(node.x!, node.y!, innerRadius, 0, this.PI_2);
+        }, EColor.white);
+      }, 0.5);
     }
 
     strokeWithColor(stroke: () => void, color: string) {
@@ -397,14 +412,12 @@
         draw();
         return;
       }
-      if (!nodeOrLink.alpha) {
+      if (nodeOrLink.alpha === undefined) {
         nodeOrLink.alpha = this.canvasAlpha;
       }
       if (nodeOrLink.alpha !== alpha) {
         alpha = d3.interpolate(nodeOrLink.alpha, alpha)(this.interpolate);
-        if (this.interpolate > 0) {
-          nodeOrLink.alpha = alpha;
-        }
+        nodeOrLink.alpha = alpha;
       }
       this.canvasCtx.globalAlpha = alpha;
       draw();
@@ -420,13 +433,15 @@
     }
 
     dragSubject() {
-      const node = this.findNode();
-      if (node) {
-        return node;
+      let nodeOrLink: NodeDatum | LinkDatum | null = this.findNode();
+      if (!nodeOrLink) {
+        nodeOrLink = this.findLink();
       }
-      const link = this.findLink();
-      if (link) {
-        return link;
+      if (!nodeOrLink) {
+        return;
+      }
+      if (this.selectedNodeOrLink !== nodeOrLink) {
+        return nodeOrLink;
       }
       this.selectedNodeOrLink = null;
     }
@@ -494,8 +509,8 @@
     addNode(path: string, title: string, tags?: string[]) {
       this.linkCount[path] = [[], []];
       const node: NodeDatum = {
-        x: this.width / 2,
-        y: this.height / 2,
+        x: this.centerXY[0],
+        y: this.centerXY[1],
         id: path,
         name: title,
         tags: tags || [],
@@ -511,15 +526,15 @@
       if (source.index === target.index) {
         return;
       }
-      const sourceLinkCount = this.linkCount[source.id];
-      const targetLinkCount = this.linkCount[target.id];
-      if (sourceLinkCount[1].includes(target.id)) {
+      const [, sourceTargets] = this.linkCount[source.id];
+      const [targetSources] = this.linkCount[target.id];
+      if (sourceTargets.includes(target.id) || targetSources.includes(source.id)) {
         return;
       }
-      sourceLinkCount[1].push(target.id);
-      targetLinkCount[0].push(source.id);
+      sourceTargets.push(target.id);
+      targetSources.push(source.id);
       this.links.push({ source, target } as LinkDatum);
-      this.increaseRadius(target);
+      this.increaseRadius(source);
       this.interpolate = 0;
       this.reloadLink();
       this.restartSimulationWithAlpha();
@@ -566,7 +581,7 @@
       return this.transformXY(x, y);
     }
 
-    transformXY(x: number, y: number): [number, number] {
+    transformXY(x: number, y: number): TPoint {
       return [this.transform.invertX(x), this.transform.invertY(y)];
     }
 
