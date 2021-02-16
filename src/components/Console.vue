@@ -12,6 +12,8 @@
 </template>
 
 <script lang="ts">
+  import { updateAsyncScript } from '@/utils';
+
   @vno.VPD.Component({ el: '#console' })
   export default class Console extends vno.Vue {
     evalStr = '';
@@ -45,12 +47,7 @@
         isError, isAsync, value,
       });
       this.reset();
-      this.$nextTick(() => {
-        vno.articleSelf.asyncResults.forEach(result => {
-          vno.markdown.updateAsyncScript(result);
-        });
-        vno.markdown.updateDom();
-      });
+      this.$nextTick(() => updateAsyncScript());
     }
   }
 </script>

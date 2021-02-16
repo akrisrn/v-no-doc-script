@@ -1,3 +1,15 @@
+export function updateAsyncScript() {
+  let needUpdate = false;
+  vno.articleSelf.asyncResults.forEach(result => {
+    if (vno.markdown.updateAsyncScript(result) && !needUpdate) {
+      needUpdate = true;
+    }
+  });
+  if (needUpdate) {
+    vno.markdown.updateDom().then();
+  }
+}
+
 export function strToRGB(str: string) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {

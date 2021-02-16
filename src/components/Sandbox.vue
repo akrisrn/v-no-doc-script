@@ -7,6 +7,8 @@
 </template>
 
 <script lang="ts">
+  import { updateAsyncScript } from '@/utils';
+
   @vno.VPD.Component({ el: '#sandbox' })
   export default class Sandbox extends vno.Vue {
     // noinspection JSUnusedGlobalSymbols
@@ -28,6 +30,7 @@
       } else {
         this.text = localStorage.getItem(this.key) || '';
       }
+      vno.addEventListener(document, vno.EEvent.rendered, () => updateAsyncScript());
     }
 
     @vno.VPD.Watch('text')
