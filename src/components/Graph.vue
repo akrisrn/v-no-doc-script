@@ -88,6 +88,8 @@
     draggedLinkSourceOffsetXY: TPoint | null = null;
     draggedLinkTargetOffsetXY: TPoint | null = null;
 
+    readyUnselect = false;
+
     get style() {
       return {
         width: `${this.width}px`,
@@ -173,7 +175,7 @@
           .call(d3.drag<HTMLCanvasElement, unknown>()
               .subject(this.dragSubject)
               .on('start', this.dragStarted)
-              .on('drag', this.dragged)
+              .on('drag', () => this.dragged())
               .on('end', this.dragEnded))
           .call(d3.zoom<HTMLCanvasElement, unknown>()
               .scaleExtent([1 / 10, 10])
@@ -340,7 +342,16 @@
         } else if (this.selectedLinkCount.flat().includes(node.id)) {
           innerRadius = halfRadius;
         } else {
-          isTransparent = true;
+          let sameTag = false;
+          for (const tag of this.selectedNode.tags) {
+            if (node.tags.includes(tag)) {
+              sameTag = true;
+              break;
+            }
+          }
+          if (!sameTag) {
+            isTransparent = true;
+          }
         }
       } else if (this.isSelectedLink) {
         if (this.selectedLinkNodeIndices.includes(node.index)) {
@@ -440,21 +451,24 @@
       if (!nodeOrLink) {
         return;
       }
-      if (this.selectedNodeOrLink !== nodeOrLink) {
-        return nodeOrLink;
-      }
-      this.selectedNodeOrLink = null;
+      this.readyUnselect = this.selectedNodeOrLink === nodeOrLink;
+      return nodeOrLink;
     }
 
     dragStarted() {
       if (!d3.event.active) {
         this.restartSimulationWithAlpha(true);
       }
-      this.selectedNodeOrLink = d3.event.subject;
-      this.dragged();
+      if (!this.readyUnselect) {
+        this.selectedNodeOrLink = d3.event.subject;
+      }
+      this.dragged(true);
     }
 
-    dragged() {
+    dragged(isFirst = false) {
+      if (!isFirst && this.readyUnselect) {
+        this.readyUnselect = false;
+      }
       const [x, y] = this.getCanvasXY();
       if (this.isSelectedNode) {
         this.selectedNode.fx = x;
@@ -483,17 +497,17 @@
       if (this.isSelectedNode) {
         this.selectedNode.fx = null;
         this.selectedNode.fy = null;
-        return;
+      } else if (this.isSelectedLink) {
+        this.selectedLink.source.fx = null;
+        this.selectedLink.source.fy = null;
+        this.selectedLink.target.fx = null;
+        this.selectedLink.target.fy = null;
+        this.draggedLinkSourceOffsetXY = null;
+        this.draggedLinkTargetOffsetXY = null;
       }
-      if (!this.isSelectedLink) {
-        return;
+      if (this.readyUnselect) {
+        this.selectedNodeOrLink = null;
       }
-      this.selectedLink.source.fx = null;
-      this.selectedLink.source.fy = null;
-      this.selectedLink.target.fx = null;
-      this.selectedLink.target.fy = null;
-      this.draggedLinkSourceOffsetXY = null;
-      this.draggedLinkTargetOffsetXY = null;
     }
 
     zoomed() {
