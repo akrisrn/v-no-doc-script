@@ -8,6 +8,7 @@ export function updateAsyncScript() {
   if (needUpdate) {
     vno.markdown.updateDom().then();
   }
+  return needUpdate;
 }
 
 export function strToRGB(str: string) {

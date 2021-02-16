@@ -47,7 +47,11 @@
         isError, isAsync, value,
       });
       this.reset();
-      this.$nextTick(() => updateAsyncScript());
+      this.$nextTick(() => {
+        if (!updateAsyncScript()) {
+          vno.markdown.updateDom();
+        }
+      });
     }
   }
 </script>
