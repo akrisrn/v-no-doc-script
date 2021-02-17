@@ -28,7 +28,7 @@
         this.enableLS = false;
         this.text = decodeURIComponent(data);
       } else {
-        this.text = localStorage.getItem(this.key) || '';
+        this.text = vno.storage.getItem(this.key) || '';
       }
       vno.addEventListener(document, vno.EEvent.rendered, () => updateAsyncScript());
     }
@@ -44,9 +44,9 @@
         return;
       }
       if (this.text) {
-        localStorage.setItem(this.key, this.text);
+        vno.storage.setItem(this.key, this.text);
       } else {
-        localStorage.removeItem(this.key);
+        vno.storage.removeItem(this.key);
       }
     }
 

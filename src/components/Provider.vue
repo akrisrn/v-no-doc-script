@@ -9,9 +9,9 @@
   @vno.VPD.Component({ el: document.createElement('div') })
   export default class Provider extends vno.Vue {
     isZen = vno.gadgetSelf.isZen;
-    logo = vno.path.addBaseUrl(vno.getMessage('paths.logo', []));
-    powered = JSON.parse(vno.getMessage('links.powered', [])) as TAnchor;
-    hosted = JSON.parse(vno.getMessage('links.hosted', [])) as TAnchor;
+    logo = vno.path.addBaseUrl(vno.getMessage('paths.logo'));
+    powered = JSON.parse(vno.getMessage('links.powered')) as TAnchor;
+    hosted = JSON.parse(vno.getMessage('links.hosted')) as TAnchor;
 
     get html() {
       return vno.markdown.renderMD(vno.getMessage('components.provider', [

@@ -48,10 +48,10 @@
     };
 
     isLoading = true;
-    loadingText = vno.getMessage('loading', []);
+    loadingText = vno.getMessage('loading');
 
     isError = false;
-    errorText = vno.getMessage('components.graph.error', []);
+    errorText = vno.getMessage('components.graph.error');
 
     width = 0;
     height = 700;
