@@ -1,28 +1,11 @@
 import '@/styles/common.scss';
 
-const topDiv = document.querySelector('#top > div')!;
-
-const apiLink = document.createElement('a');
-apiLink.href = `#${vno.getMessage('paths.api', vno.selectConf)}`;
-const select = topDiv.querySelector('select');
-if (select) {
-  topDiv.insertBefore(apiLink, select);
-} else {
-  topDiv.append(apiLink);
-}
-
-const addToTop = (href: string) => {
-  const link = document.createElement('a');
-  link.href = href;
-  topDiv.insertBefore(link, apiLink);
-};
-
-addToTop(`#${vno.getMessage('paths.console')}`);
-addToTop(`#${vno.getMessage('paths.sandbox')}`);
-addToTop(`#${vno.getMessage('paths.graph')}`);
-addToTop(`#${vno.getMessage('paths.releases', vno.selectConf)}`);
-
-vno.updateDom().then();
+vno.appSelf.addLink(vno.getMessage('paths.console'));
+vno.appSelf.addLink(vno.getMessage('paths.sandbox'));
+vno.appSelf.addLink(vno.getMessage('paths.graph'));
+vno.appSelf.addLink(vno.getMessage('paths.releases', vno.selectConf));
+vno.appSelf.addLink(vno.getMessage('paths.api', vno.selectConf));
+vno.appSelf.$nextTick(() => vno.updateDom());
 
 vno.callAndListen(() => {
   const itemCommit = document.querySelector<HTMLElement>('.item-commit');
