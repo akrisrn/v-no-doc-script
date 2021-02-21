@@ -10,8 +10,8 @@
   export default class Provider extends vno.Vue {
     isZen = vno.gadgetSelf.isZen;
     logo = vno.path.addBaseUrl(vno.getMessage('paths.logo'));
-    powered = JSON.parse(vno.getMessage('links.powered')) as TAnchor;
-    hosted = JSON.parse(vno.getMessage('links.hosted')) as TAnchor;
+    powered = JSON.parse(vno.getMessage('links.powered')) as [string, string];
+    hosted = JSON.parse(vno.getMessage('links.hosted')) as [string, string];
 
     get html() {
       return vno.markdown.renderMD(vno.getMessage('components.provider', [
