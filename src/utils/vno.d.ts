@@ -1,4 +1,4 @@
-/* v1.2.9 */
+/* v1.2.10 */
 
 declare let vnoConfig: IConfig;
 
@@ -303,6 +303,7 @@ declare namespace vno {
 declare class App extends vno.Vue {
   keyInput: string;
   selectConf: string;
+  otherLinks: TAnchor[];
 
   get initing(): typeof vno.store.state.initing
 
@@ -317,6 +318,8 @@ declare class App extends vno.Vue {
   get shortBaseFiles(): typeof vno.config.shortBaseFiles
 
   get favicon(): string
+
+  get iconExternal(): string
 
   addLink(href: string, text = ''): TAnchor
 
@@ -592,6 +595,8 @@ type TFlag = {
 type TAnchor = {
   text: string
   href: string
+  isExternal?: boolean
+  isMarkdown?: boolean
 }
 
 type TAsyncResult = {
