@@ -20,7 +20,7 @@ vno.callAndListen(() => {
   a.text = hash;
   itemCommit.innerHTML = '';
   itemCommit.append(a);
-}, vno.EEvent.mainShown);
+}, vno.EEvent.mainShown, document, true);
 
 vno.callAndListen(() => {
   if (vno.filePath.split('/')[2] !== 'api' || vno.mainSelf.isError) {
@@ -29,7 +29,7 @@ vno.callAndListen(() => {
   document.querySelectorAll('header,h2,h3,h4,h5,h6,#toc').forEach(element => {
     element.classList.add('api');
   });
-}, vno.EEvent.htmlChanged);
+}, vno.EEvent.htmlChanged, document, true);
 
 vno.callAndListen(() => vno.waitFor(() => {
   twemoji.parse(document.body);
