@@ -15,6 +15,7 @@ module.exports = {
     common: './common.ts',
     'parse-emoji': './parse-emoji.ts',
     provider: './provider.ts',
+    'render-math': './render-math.ts',
     'social-preview': './social-preview.ts',
   },
   plugins: [
