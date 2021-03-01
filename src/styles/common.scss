@@ -112,6 +112,10 @@
   --mono-font-family: "Source Code Pro", SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
 }
 
+#top > div a:after {
+  font-family: Arial, serif;
+}
+
 main {
   .api {
     font-family: var(--mono-font-family);
