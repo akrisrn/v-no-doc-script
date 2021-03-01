@@ -13,6 +13,7 @@ module.exports = {
   context,
   entry: {
     common: './common.ts',
+    'parse-emoji': './parse-emoji.ts',
     provider: './provider.ts',
     'social-preview': './social-preview.ts',
   },

@@ -30,7 +30,3 @@ vno.callAndListen(() => {
     element.classList.add('api');
   });
 }, vno.EEvent.htmlChanged, document, true);
-
-vno.callAndListen(() => vno.waitFor(() => {
-  twemoji.parse(document.body);
-}), vno.EEvent.htmlChanged);
