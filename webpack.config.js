@@ -13,6 +13,7 @@ module.exports = {
   context,
   entry: {
     common: './common.ts',
+    'init-mermaid': './init-mermaid.ts',
     'parse-emoji': './parse-emoji.ts',
     provider: './provider.ts',
     'render-math': './render-math.ts',
